@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.IO;
+using System.Text;
 
 // References:
 // https://www.c-sharpcorner.com/article/sending-an-hl7-message-receiving-it-using-a-listener-and-sending-an-acknowledge/
@@ -52,9 +53,19 @@ namespace HL7Sender
             sender.SendBufferSize = 4096;
             sender.Send(payload);
 
+            // Read ACK bytes
+            byte[] buf = new byte[4096];
+            int recLen = sender.Receive(buf);
+            string readStr = Encoding.ASCII.GetString(buf);
+            readStr = readStr.Substring(1,recLen-3);
+
+            sender.Shutdown(SocketShutdown.Both);
             sender.Close();
 
+            Console.WriteLine(readStr);
+
             Console.WriteLine("Done.");
+
         }
     }
 }
